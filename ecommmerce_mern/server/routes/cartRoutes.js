@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { protect } = require('../controllers/authController');
 const { getCart, addToCart, updateItemQuantity, removeItem, clearCart } = require('../controllers/cartController');

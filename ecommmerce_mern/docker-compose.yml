@@ -21,7 +21,7 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/ecommerce?authSource=admin
+      - MONGODB_URI=mongodb+srv://adityapandeyadu_db_user:<adityapandeyadu>@cluster0.8sq0xyx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - JWT_SECRET=your-super-secret-jwt-key
       - STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
     depends_on:
