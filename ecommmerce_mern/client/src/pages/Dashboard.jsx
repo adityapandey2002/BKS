@@ -52,7 +52,15 @@ const Dashboard = () => {
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {products.map(p => (
           <div key={p._id} className="border rounded p-3 bg-white">
-            <img src={p.images?.} alt={p.name} className="h-32 w-full object-cover rounded" />
+            {/* <img src={p.images?.} alt={p.name} className="h-32 w-full object-cover rounded" /> */}
+            {p.images && (
+              <img
+                src={p.images}
+                alt={p.name}
+                className="h-40 w-full object-cover rounded"
+              />
+            )}
+
             <h3 className="mt-2 font-medium">{p.name}</h3>
             <p className="text-blue-600 font-semibold">${p.price}</p>
             <button onClick={() => remove(p._id)} className="mt-2 text-red-600">Delete</button>

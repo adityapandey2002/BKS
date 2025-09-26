@@ -32,7 +32,15 @@ const Cart = () => {
           <div className="md:col-span-2 space-y-4">
             {items.map(i => (
               <div key={i.product?._id || i.product} className="flex items-center gap-4 border rounded p-3 bg-white">
-                <img src={i.product?.images?.} alt={i.product?.name} className="h-16 w-16 object-cover rounded" />
+                {/* <img src={i.product?.images?.} alt={i.product?.name} className="h-16 w-16 object-cover rounded" /> */}
+                {i.images && (
+                  <img
+                    src={i.images}
+                    alt={i.name}
+                    className="h-40 w-full object-cover rounded"
+                  />
+                )}
+
                 <div className="flex-1">
                   <p className="font-medium">{i.product?.name}</p>
                   <p className="text-gray-600">${i.price}</p>

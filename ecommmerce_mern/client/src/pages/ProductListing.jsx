@@ -30,7 +30,15 @@ const ProductListing = () => {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         {list.map(p => (
           <Link key={p._id} to={`/products/${p._id}`} className="border rounded p-4 bg-white hover:shadow">
-            <img src={p.images?.} alt={p.name} className="h-40 w-full object-cover rounded" />
+            {/* <img src={p.images?.} alt={p.name} className="h-40 w-full object-cover rounded" /> */}
+            {p.images && (
+              <img
+                src={p.images}
+                alt={p.name}
+                className="h-40 w-full object-cover rounded"
+              />
+            )}
+
             <h3 className="mt-3 font-medium">{p.name}</h3>
             <p className="text-blue-600 font-semibold mt-1">${p.price}</p>
           </Link>

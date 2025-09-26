@@ -26,7 +26,15 @@ const ProductDetails = () => {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      <img src={current.images?.} alt={current.name} className="w-full rounded" />
+      {/* <img src={current.images?.} alt={current.name} className="w-full rounded" /> */}
+      {current.images && (
+        <img
+          src={current.images}
+          alt={current.name}
+          className="h-40 w-full object-cover rounded"
+        />
+      )}
+
       <div>
         <h1 className="text-2xl font-semibold">{current.name}</h1>
         <p className="mt-2 text-gray-600">{current.description}</p>
