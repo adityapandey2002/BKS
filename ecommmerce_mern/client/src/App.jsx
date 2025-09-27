@@ -1,11 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Common UI
-import Navbar from './components/common/Navbar';
+// Layout
+import Layout from './components/Layout';
+
+// Section Components
+import HomeSection from './components/sections/HomeSection';
+import AboutSection from './components/sections/AboutSection';
+import ContactSection from './components/sections/ContactSection';
+import BlogSection from './components/sections/BlogSection';
+import TrackOrderSection from './components/sections/TrackOrderSection';
 
 // Pages
-import Home from './pages/Home';
 import ProductListing from './pages/ProductListing';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
@@ -13,6 +19,7 @@ import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Wishlist from './pages/Wishlist';
 
 // Auth
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -20,64 +27,70 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <main className="container mx-auto px-4 py-8">
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<ProductListing />} />
-            <Route path="/products/:id" element={<ProductDetails />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+      <Routes>
+        {/* Main Layout with Outlet */}
+        <Route path="/" element={<Layout />}>
+          {/* Home Page Sections */}
+          <Route index element={<HomeSection />} />
+          <Route path="about" element={<AboutSection />} />
+          <Route path="contact" element={<ContactSection />} />
+          <Route path="blog" element={<BlogSection />} />
+          <Route path="track-order" element={<TrackOrderSection />} />
 
-            {/* Protected */}
-            <Route
-              path="/cart"
-              element={
-                <ProtectedRoute>
-                  <Cart />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute>
-                  <Checkout />
-                </ProtectedRoute>
-              }
-            />
+          {/* Other Pages */}
+          <Route path="products" element={<ProductListing />} />
+          <Route path="products/:id" element={<ProductDetails />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
 
-            {/* Admin Only */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute adminOnly>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+          {/* Protected Routes */}
+          <Route
+            path="wishlist"
+            element={
+              <ProtectedRoute>
+                <Wishlist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* 404 */}
-            <Route
-              path="*"
-              element={
-                <div className="text-center py-20">
-                  <h1 className="text-4xl font-bold text-gray-600 mb-4">404</h1>
-                  <p className="text-gray-500">Page not found</p>
-                </div>
-              }
-            />
-          </Routes>
-        </main>
+          {/* Admin Only */}
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute adminOnly>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <footer className="bg-white border-t mt-20">
-          <div className="container mx-auto px-4 py-8 text-center text-gray-600">
-            <p>&copy; 2025 ShopMERN. Built with MERN Stack + Tailwind CSS</p>
-          </div>
-        </footer>
-      </div>
+          {/* 404 */}
+          <Route
+            path="*"
+            element={
+              <div className="text-center py-20">
+                <h1 className="text-4xl font-bold text-gray-600 mb-4">404</h1>
+                <p className="text-gray-500">Page not found</p>
+              </div>
+            }
+          />
+        </Route>
+      </Routes>
     </Router>
   );
 }
