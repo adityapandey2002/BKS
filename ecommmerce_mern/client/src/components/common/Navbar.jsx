@@ -13,7 +13,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white border-b">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-blue-600">ShopMERN</Link>
+        <Link to="/" className="text-xl font-bold text-blue-600">Bihar Ka Swaad</Link>
         <div className="flex items-center gap-4">
           <NavLink to="/products" className="text-gray-700 hover:text-blue-600">Products</NavLink>
           <NavLink to="/cart" className="relative text-gray-700 hover:text-blue-600">
