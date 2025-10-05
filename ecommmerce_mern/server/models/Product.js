@@ -17,34 +17,30 @@ const productSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: [true, 'Product category is required']
+    required: [true, 'Product category is required'],
+    enum: ['Snacks', 'Sweets', 'Spices', 'Beverages', 'Meals', 'Pickles']
   },
-  images: [{
-    type: String,
-    required: true
-  }],
   stock: {
     type: Number,
-    required: true,
+    required: [true, 'Stock quantity is required'],
     min: 0,
     default: 0
   },
-  brand: String,
-  rating: {
-    average: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5
-    },
-    numReviews: {
-      type: Number,
-      default: 0
-    }
+  image: {
+    data: Buffer,        // Store image binary data
+    contentType: String  // Store MIME type (image/jpeg)
   },
-  isActive: {
+  featured: {
+    type: Boolean,
+    default: false
+  },
+  published: {
     type: Boolean,
     default: true
+  },
+  ratings: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
   }
 }, {
   timestamps: true

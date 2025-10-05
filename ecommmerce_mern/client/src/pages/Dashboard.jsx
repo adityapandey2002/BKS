@@ -1,71 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import AddProduct from '../components/admin/AddProduct';
 
 const Dashboard = () => {
-  const API = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}`;
-  const { token } = useSelector((s) => s.auth);
-  const [form, setForm] = useState({ name: '', description: '', price: 0, category: '', images: [''] });
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const headers = { Authorization: `Bearer ${token}` };
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  const load = async () => {
-    const { data } = await axios.get(`${API}/products`);
-    setProducts(data.data || data);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(`${API_URL}/products`);
+      setProducts(data.data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const create = async (e) => {
-    e.preventDefault();
-    await axios.post(`${API}/products`, form, { headers });
-    setForm({ name: '', description: '', price: 0, category: '', images: [''] });
-    load();
-  };
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  const remove = async (id) => {
-    await axios.delete(`${API}/products/${id}`, { headers });
-    load();
-  };
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this product?')) return;
 
-  useEffect(() => { load(); }, []);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('✅ Product deleted');
+      fetchProducts();
+    } catch (error) {
+      alert('❌ Failed to delete product');
+    }
+  };
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">Admin Dashboard</h1>
+    <div className="min-h-screen py-12">
+      <div className="max-w-7xl mx-auto px-4">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
 
-      <form onSubmit={create} className="bg-white p-4 rounded border mb-6 grid gap-3">
-        <input className="border rounded px-3 py-2" placeholder="Name" value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <textarea className="border rounded px-3 py-2" placeholder="Description" value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-        <div className="grid grid-cols-2 gap-3">
-          <input className="border rounded px-3 py-2" placeholder="Category" value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })} required />
-          <input className="border rounded px-3 py-2" type="number" placeholder="Price" value={form.price}
-            onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} required />
+        {/* Add Product Component */}
+        <AddProduct onProductAdded={fetchProducts} />
+
+        {/* Products List */}
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
+
+          {loading ? (
+            <p>Loading products...</p>
+          ) : products.length === 0 ? (
+            <p className="text-gray-500">No products yet. Add your first product above!</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div key={product._id} className="border rounded-lg p-4 hover:shadow-lg transition">
+                  {product.imageUrl && (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                    />
+                  )}
+                  <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                  <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+                  <p className="text-green-600 font-bold mb-2">₹{product.price}</p>
+                  <p className="text-gray-500 text-sm mb-4">Stock: {product.stock}</p>
+                  <button
+                    onClick={() => handleDelete(product._id)}
+                    className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <input className="border rounded px-3 py-2" placeholder="Image URL" value={form.images || ''}
-          onChange={(e) => setForm({ ...form, images: [e.target.value] })} required />
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">Create Product</button>
-      </form>
-
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {products.map(p => (
-          <div key={p._id} className="border rounded p-3 bg-white">
-            {/* <img src={p.images?.} alt={p.name} className="h-32 w-full object-cover rounded" /> */}
-            {p.images && (
-              <img
-                src={p.images}
-                alt={p.name}
-                className="h-40 w-full object-cover rounded"
-              />
-            )}
-
-            <h3 className="mt-2 font-medium">{p.name}</h3>
-            <p className="text-blue-600 font-semibold">${p.price}</p>
-            <button onClick={() => remove(p._id)} className="mt-2 text-red-600">Delete</button>
-          </div>
-        ))}
       </div>
     </div>
   );

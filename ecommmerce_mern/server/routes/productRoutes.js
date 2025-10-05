@@ -1,24 +1,25 @@
 const express = require('express');
 const {
   getAllProducts,
-  getProduct,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct
 } = require('../controllers/productController');
 const { protect, restrictTo } = require('../controllers/authController');
+const upload = require('../config/multer');
 
 const router = express.Router();
 
-router
-  .route('/')
-  .get(getAllProducts)
-  .post(protect, restrictTo('admin'), createProduct);
+// Public routes
+router.get('/', getAllProducts);
+router.get('/:id', getProductById);
 
-router
-  .route('/:id')
-  .get(getProduct)
-  .patch(protect, restrictTo('admin'), updateProduct)
-  .delete(protect, restrictTo('admin'), deleteProduct);
+// Admin routes (protected)
+router.post('/', protect, restrictTo('admin'), upload.single('image'), createProduct);
+router.patch('/:id', protect, restrictTo('admin'), upload.single('image'), updateProduct);
+router.delete('/:id', protect, restrictTo('admin'), deleteProduct);
+
+console.log('✅ Product routes loaded');
 
 module.exports = router;
