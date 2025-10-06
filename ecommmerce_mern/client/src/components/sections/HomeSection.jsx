@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts } from '../../store/slices/productSlice';
 
 const HomeSection = () => {
+  const dispatch = useDispatch();
+  const { list: featuredProducts, isLoading } = useSelector((s) => s.products);
+
+  useEffect(() => {
+    dispatch(fetchProducts({ featured: true }));
+  }, [dispatch]);
+
   return (
     <div>
       {/* Hero Section */}
@@ -110,70 +119,42 @@ const HomeSection = () => {
       {/* Featured Products */}
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Featured Products</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200">
-            <img
-              src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=250&fit=crop"
-              alt="Litti Chokha"
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Traditional Litti Chokha</h3>
-              <p className="text-gray-600 mb-4">Authentic Bihari litti with roasted gram flour and spices</p>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-blue-600">₹299</span>
-                <Link
-                  to="/products"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-                >
-                  View Details
-                </Link>
-              </div>
-            </div>
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading featured products...</p>
           </div>
-
-          <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200">
-            <img
-              src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=250&fit=crop"
-              alt="Thekua"
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Bihari Thekua</h3>
-              <p className="text-gray-600 mb-4">Traditional sweet made with wheat flour and jaggery</p>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-blue-600">₹199</span>
-                <Link
-                  to="/products"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-                >
-                  View Details
-                </Link>
-              </div>
-            </div>
+        ) : featuredProducts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">No featured products available at the moment.</p>
           </div>
-
-          <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200">
-            <img
-              src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=250&fit=crop"
-              alt="Sattu"
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Sattu Powder</h3>
-              <p className="text-gray-600 mb-4">Roasted gram flour perfect for refreshing drinks</p>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-blue-600">₹149</span>
-                <Link
-                  to="/products"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-                >
-                  View Details
-                </Link>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-6">
+            {featuredProducts.slice(0, 3).map((product) => (
+              <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200">
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                )}
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{product.name}</h3>
+                  <p className="text-gray-600 mb-4">{product.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
+                    <Link
+                      to={`/products/${product._id}`}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        </div>
+        )}
       </section>
 
       {/* Newsletter Signup */}

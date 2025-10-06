@@ -4,9 +4,15 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products`;
 
-export const fetchProducts = createAsyncThunk('products/fetchAll', async (_, { rejectWithValue }) => {
+export const fetchProducts = createAsyncThunk('products/fetchAll', async (params = {}, { rejectWithValue }) => {
   try {
-    const { data } = await axios.get(API);
+    const queryParams = new URLSearchParams();
+    if (params.featured) queryParams.append('featured', 'true');
+    if (params.category) queryParams.append('category', params.category);
+    if (params.q) queryParams.append('search', params.q);
+    
+    const url = queryParams.toString() ? `${API}?${queryParams.toString()}` : API;
+    const { data } = await axios.get(url);
     return data; // expect array or {data:[]}, adjust as needed
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to load products');

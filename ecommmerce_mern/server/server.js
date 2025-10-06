@@ -5,6 +5,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+// Add with other route imports
+const wishlistRoutes = require('./routes/wishlistRoutes');
+
+
+
 
 const app = express();
 
@@ -16,6 +21,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
+
+// Mount routes
+app.use('/api/wishlists', wishlistRoutes);  // Add this line
 
 // Test route - to verify server is running
 app.get('/api/test', (req, res) => {
