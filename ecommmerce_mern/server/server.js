@@ -7,6 +7,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 // Add with other route imports
 const wishlistRoutes = require('./routes/wishlistRoutes');
+const siteAssetsRoutes = require('./routes/siteAssetsRoutes');
+
 
 
 
@@ -24,6 +26,7 @@ app.use(cookieParser());
 
 // Mount routes
 app.use('/api/wishlists', wishlistRoutes);  // Add this line
+app.use('/api/site-assets', siteAssetsRoutes);
 
 // Test route - to verify server is running
 app.get('/api/test', (req, res) => {
