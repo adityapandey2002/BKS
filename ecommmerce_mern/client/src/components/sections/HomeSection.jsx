@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../store/slices/productSlice';
@@ -12,6 +12,11 @@ const HomeSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [siteName, setSiteName] = useState('Bihar Ka Swaad');
   const [tagline, setTagline] = useState('Authentic Flavors from Bihar');
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const slideshowRef = useRef(null);
+  const intervalRef = useRef(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -19,6 +24,7 @@ const HomeSection = () => {
   useEffect(() => {
     dispatch(fetchProducts({ featured: true }));
   }, [dispatch]);
+
   // Fetch slideshow from database
   useEffect(() => {
     const fetchSiteAssets = async () => {
@@ -37,127 +43,116 @@ const HomeSection = () => {
     fetchSiteAssets();
   }, [API_URL]);
 
-  // Auto-rotate slideshow every 5 seconds
+  // Auto-rotate slideshow with pause functionality
   useEffect(() => {
-    if (slideshow.length > 1) {
-      const interval = setInterval(() => {
+    if (slideshow.length > 1 && !isPaused) {
+      intervalRef.current = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % slideshow.length);
       }, 5000);
-      return () => clearInterval(interval);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
-  }, [slideshow]);
 
-  const goToSlide = (index) => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [slideshow.length, isPaused]);
+
+  const goToSlide = useCallback((index) => {
     setCurrentSlide(index);
-  };
+  }, []);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slideshow.length);
+  }, [slideshow.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + slideshow.length) % slideshow.length);
+  }, [slideshow.length]);
+
+  // Touch handling for mobile swipe
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slideshow.length) % slideshow.length);
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
   };
 
   const activeSlides = slideshow?.filter(s => s.active !== false) || [];
 
   return (
     <div className="bg-gray-50">
-      {/* Hero Slideshow */}
+      {/* Hero Slideshow Section */}
       {activeSlides.length > 0 ? (
-        <div className="relative h-[500px] md:h-[600px] overflow-hidden">
-          {activeSlides.map((slide, index) => (
-            <div
-              key={slide._id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-                }`}
-            >
-              {slide.imageUrl && (
-                <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover" />
-              )}
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <div className="text-center text-white px-4 max-w-4xl">
-                  <h1 className="text-4xl md:text-6xl font-bold mb-4">{slide.title}</h1>
-                  {slide.subtitle && <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>}
-                  <Link
-                    to={slide.buttonLink || '/products'}
-                    className="inline-block bg-orange-600 text-white px-8 py-4 rounded-full hover:bg-orange-700"
-                  >
-                    {slide.buttonText || 'Shop Now'}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {activeSlides.length > 1 && (
-            <>
-              <button onClick={prevSlide} className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button onClick={nextSlide} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                {activeSlides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`transition-all ${index === currentSlide ? 'w-8 h-3 bg-white rounded-full' : 'w-3 h-3 bg-white/50 rounded-full'
-                      }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white py-20">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">Welcome to {siteName}</h1>
-            <p className="text-xl md:text-2xl mb-8">{tagline}</p>
-            <Link to="/products" className="inline-block bg-white text-orange-600 px-8 py-4 rounded-full hover:bg-gray-100">
-              Explore Products
-            </Link>
-          </div>
-        </div>
-      )}
-
-      return (
-      <div className="bg-gray-50">
-        {/* Hero Slideshow Section */}
-        {slideshow.length > 0 ? (
-          <div className="relative h-[500px] md:h-[600px] overflow-hidden bg-gradient-to-r from-orange-500 to-red-600">
-            {slideshow.map((slide, index) => (
+        <div 
+          ref={slideshowRef}
+          className="relative h-[60vh] min-h-[400px] max-h-[700px] overflow-hidden group"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Continuous Sliding Container */}
+          <div 
+            className="flex transition-transform duration-1000 ease-in-out h-full"
+            style={{
+              transform: `translateX(-${currentSlide * 100}%)`,
+              width: `${activeSlides.length * 100}%`
+            }}
+          >
+            {activeSlides.map((slide, index) => (
               <div
                 key={slide._id}
-                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-                  }`}
+                className="relative w-full h-full flex-shrink-0"
+                style={{ width: `${100 / activeSlides.length}%` }}
               >
                 {slide.imageUrl && (
                   <img
                     src={slide.imageUrl}
                     alt={slide.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    onLoad={(e) => {
+                      // Preload next image for smoother transitions
+                      if (index < activeSlides.length - 1 && activeSlides[index + 1]?.imageUrl) {
+                        const nextImg = new Image();
+                        nextImg.src = activeSlides[index + 1].imageUrl;
+                      }
+                    }}
                   />
                 )}
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                  <div className="text-center text-white px-4 max-w-4xl">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 flex items-center justify-center">
+                  <div className="text-center text-white px-4 max-w-5xl mx-auto">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight animate-slide-in-up">
                       {slide.title}
                     </h1>
                     {slide.subtitle && (
-                      <p className="text-xl md:text-2xl mb-8 animate-fade-in-delay">
+                      <p className="text-lg sm:text-xl md:text-2xl mb-8 leading-relaxed animate-slide-in-up-delay">
                         {slide.subtitle}
                       </p>
                     )}
                     <Link
                       to={slide.buttonLink || '/products'}
-                      className="inline-block bg-orange-600 text-white px-8 py-4 rounded-full hover:bg-orange-700 transition duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="inline-block bg-orange-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-orange-700 transition-all duration-300 font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 animate-slide-in-up-delay-2"
                     >
                       {slide.buttonText || 'Shop Now'}
                     </Link>
@@ -165,65 +160,80 @@ const HomeSection = () => {
                 </div>
               </div>
             ))}
-
-            {/* Navigation Arrows */}
-            {slideshow.length > 1 && (
-              <>
-                <button
-                  onClick={prevSlide}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full backdrop-blur-sm transition"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full backdrop-blur-sm transition"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            {/* Slide Indicators */}
-            {slideshow.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                {slideshow.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`transition-all duration-300 ${index === currentSlide
-                      ? 'w-8 h-3 bg-white rounded-full'
-                      : 'w-3 h-3 bg-white/50 rounded-full hover:bg-white/75'
-                      }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
           </div>
-        ) : (
-          // Default Hero Section (if no slideshow)
-          <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white py-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">
-                Welcome to {siteName}
-              </h1>
-              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-                {tagline}
-              </p>
-              <Link
-                to="/products"
-                className="inline-block bg-white text-orange-600 px-8 py-4 rounded-full hover:bg-gray-100 transition duration-200 font-semibold text-lg"
+
+          {/* Navigation Arrows */}
+          {activeSlides.length > 1 && (
+            <>
+              <button
+                onClick={prevSlide}
+                className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 lg:opacity-100"
+                aria-label="Previous slide"
               >
-                Explore Products
-              </Link>
+                <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 lg:opacity-100"
+                aria-label="Next slide"
+              >
+                <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Slide Indicators */}
+          {activeSlides.length > 1 && (
+            <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3">
+              {activeSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`transition-all duration-300 ${index === currentSlide
+                    ? 'w-6 sm:w-8 h-2 sm:h-3 bg-white rounded-full shadow-lg'
+                    : 'w-2 sm:w-3 h-2 sm:h-3 bg-white/50 rounded-full hover:bg-white/75'
+                    }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
+          )}
+
+          {/* Progress Bar */}
+          {activeSlides.length > 1 && !isPaused && (
+            <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
+              <div 
+                className="h-full bg-white/80 transition-all duration-100 ease-linear"
+                style={{
+                  width: `${((currentSlide + 1) / activeSlides.length) * 100}%`
+                }}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        // Default Hero Section (if no slideshow)
+        <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white py-16 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              Welcome to {siteName}
+            </h1>
+            <p className="text-lg sm:text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
+              {tagline}
+            </p>
+            <Link
+              to="/products"
+              className="inline-block bg-white text-orange-600 px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-gray-100 transition-all duration-300 font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              Explore Products
+            </Link>
           </div>
-        )}
+        </div>
+      )}
 
         {/* Quick Links Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -371,8 +381,6 @@ const HomeSection = () => {
           </div>
         </div>
       </div>
-      );
-    </div>
   );
 };
 
