@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSiteAssets } from '../../context/SiteAssetsContext';
 
 const ManageSiteAssets = () => {
+  const { refreshAssets } = useSiteAssets();
   const [assets, setAssets] = useState(null);
   const [loading, setLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const [slidePreview, setSlidePreview] = useState(null);
-
   const [logoFile, setLogoFile] = useState(null);
   const [slideFile, setSlideFile] = useState(null);
   const [slideData, setSlideData] = useState({
@@ -35,6 +36,7 @@ const ManageSiteAssets = () => {
     fetchAssets();
   }, []);
 
+  // Only allow .jpg/.jpeg
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -51,6 +53,24 @@ const ManageSiteAssets = () => {
     reader.readAsDataURL(file);
   };
 
+  // Only allow .jpg/.jpeg
+  const handleSlideImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      alert('❌ Only JPG/JPEG images allowed!');
+      return;
+    }
+
+    setSlideFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setSlidePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  // Upload logo handler
   const handleUploadLogo = async () => {
     if (!logoFile) {
       alert('Please select a logo image');
@@ -73,6 +93,7 @@ const ManageSiteAssets = () => {
       alert('✅ Logo updated successfully!');
       setLogoFile(null);
       fetchAssets();
+      refreshAssets();
     } catch (error) {
       alert('❌ Failed to upload logo');
       console.error(error);
@@ -81,22 +102,7 @@ const ManageSiteAssets = () => {
     }
   };
 
-  const handleSlideImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const validTypes = ['image/jpeg', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-      alert('❌ Only JPG/JPEG images allowed!');
-      return;
-    }
-
-    setSlideFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setSlidePreview(reader.result);
-    reader.readAsDataURL(file);
-  };
-
+  // Add slideshow handler
   const handleAddSlideshow = async () => {
     if (!slideFile) {
       alert('Please select a slideshow image');
@@ -132,6 +138,7 @@ const ManageSiteAssets = () => {
         order: 0
       });
       fetchAssets();
+      refreshAssets();
     } catch (error) {
       alert('❌ Failed to add slideshow');
       console.error(error);
@@ -140,6 +147,7 @@ const ManageSiteAssets = () => {
     }
   };
 
+  // Delete slideshow handler
   const handleDeleteSlide = async (slideId) => {
     if (!window.confirm('Delete this slideshow image?')) return;
 
@@ -151,6 +159,7 @@ const ManageSiteAssets = () => {
 
       alert('✅ Slideshow deleted');
       fetchAssets();
+      refreshAssets();
     } catch (error) {
       alert('❌ Failed to delete slideshow');
     }
