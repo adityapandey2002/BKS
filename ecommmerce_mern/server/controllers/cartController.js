@@ -7,7 +7,18 @@ exports.getCart = async (req, res) => {
     if (!cart) {
       return res.status(200).json({ status: 'success', data: { items: [], totalAmount: 0 } });
     }
-    res.status(200).json({ status: 'success', data: cart });
+
+    // Convert image buffer to base64 for each product in cart items
+    const cartWithImages = cart.toObject();
+    cartWithImages.items = cartWithImages.items.map(item => {
+      if (item.product && item.product.image && item.product.image.data) {
+        item.product.imageUrl = `data:${item.product.image.contentType};base64,${item.product.image.data.toString('base64')}`;
+        delete item.product.image;
+      }
+      return item;
+    });
+
+    res.status(200).json({ status: 'success', data: cartWithImages });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
@@ -34,7 +45,17 @@ exports.addToCart = async (req, res) => {
     await cart.save();
     await cart.populate('items.product');
 
-    res.status(200).json({ status: 'success', data: cart });
+    // Convert image buffer to base64 for each product in cart items
+    const cartWithImages = cart.toObject();
+    cartWithImages.items = cartWithImages.items.map(item => {
+      if (item.product && item.product.image && item.product.image.data) {
+        item.product.imageUrl = `data:${item.product.image.contentType};base64,${item.product.image.data.toString('base64')}`;
+        delete item.product.image;
+      }
+      return item;
+    });
+
+    res.status(200).json({ status: 'success', data: cartWithImages });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
@@ -55,7 +76,17 @@ exports.updateItemQuantity = async (req, res) => {
     await cart.save();
     await cart.populate('items.product');
 
-    res.status(200).json({ status: 'success', data: cart });
+    // Convert image buffer to base64 for each product in cart items
+    const cartWithImages = cart.toObject();
+    cartWithImages.items = cartWithImages.items.map(item => {
+      if (item.product && item.product.image && item.product.image.data) {
+        item.product.imageUrl = `data:${item.product.image.contentType};base64,${item.product.image.data.toString('base64')}`;
+        delete item.product.image;
+      }
+      return item;
+    });
+
+    res.status(200).json({ status: 'success', data: cartWithImages });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
@@ -75,7 +106,17 @@ exports.removeItem = async (req, res) => {
     await cart.save();
     await cart.populate('items.product');
 
-    res.status(200).json({ status: 'success', data: cart });
+    // Convert image buffer to base64 for each product in cart items
+    const cartWithImages = cart.toObject();
+    cartWithImages.items = cartWithImages.items.map(item => {
+      if (item.product && item.product.image && item.product.image.data) {
+        item.product.imageUrl = `data:${item.product.image.contentType};base64,${item.product.image.data.toString('base64')}`;
+        delete item.product.image;
+      }
+      return item;
+    });
+
+    res.status(200).json({ status: 'success', data: cartWithImages });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
