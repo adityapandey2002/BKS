@@ -1066,6 +1066,10 @@ video {
   max-width: 28rem;
 }
 
+.max-w-2xl {
+  max-width: 42rem;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1888,6 +1892,10 @@ video {
   text-transform: uppercase;
 }
 
+.capitalize {
+  text-transform: capitalize;
+}
+
 .leading-relaxed {
   line-height: 1.625;
 }
@@ -2423,6 +2431,11 @@ body {
 .focus\:ring-white:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity, 1));
+}
+
+.focus\:ring-orange-500:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(249 115 22 / var(--tw-ring-opacity, 1));
 }
 
 .focus\:ring-offset-2:focus {

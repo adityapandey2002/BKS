@@ -14,6 +14,11 @@ import ContactSection from './components/sections/ContactSection';
 import BlogSection from './components/sections/BlogSection';
 import TrackOrderSection from './components/sections/TrackOrderSection';
 
+import OrderSuccess from './pages/Ordersuccess';
+
+
+
+
 // Pages
 import ProductListing from './pages/ProductListing';
 import ProductDetails from './pages/ProductDetails';
@@ -99,7 +104,13 @@ function App() {
                   </div>
                 }
               />
+
+              <Route path="order-success/:orderId" 
+            element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
             </Route>
+
+            
+            
           </Routes>
         </Router>
       </SiteAssetsProvider>
