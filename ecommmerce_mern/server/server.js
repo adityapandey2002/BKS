@@ -14,6 +14,10 @@ const siteAssetsRoutes = require('./routes/siteAssetsRoutes');
 
 
 const app = express();
+const contactRoutes = require('./routes/contactRoutes');
+app.use('/api/contacts', contactRoutes);
+
+
 
 // Middleware - MUST come before routes
 app.use(cors({
