@@ -1,32 +1,22 @@
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const {
+  createOrder,
+  verifyPayment,
+  getOrder,
+  getUserOrders
+} = require('../controllers/paymentController');
 const { protect } = require('../controllers/authController');
 
 const router = express.Router();
 
-router.post('/create-payment-intent', protect, async (req, res) => {
-  try {
-    const { amount, currency = 'usd' } = req.body;
+// All routes require authentication
+router.use(protect);
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency,
-      metadata: {
-        userId: req.user._id.toString()
-      }
-    });
+router.post('/create-order', createOrder);
+router.post('/verify-payment', verifyPayment);
+router.get('/orders', getUserOrders);
+router.get('/orders/:id', getOrder);
 
-    res.status(200).json({
-      status: 'success',
-      clientSecret: paymentIntent.client_secret
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'error',
-      message: error.message
-    });
-  }
-});
+console.log('✅ Payment routes loaded');
 
 module.exports = router;
-
