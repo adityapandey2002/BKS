@@ -1,22 +1,19 @@
 const express = require('express');
-const {
-  createOrder,
-  verifyPayment,
-  getOrder,
-  getUserOrders
-} = require('../controllers/paymentController');
-const { protect } = require('../controllers/authController');
-
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
+// Temporary payment routes
+router.post('/create-order', (req, res) => {
+  res.status(503).json({
+    status: 'error',
+    message: 'Payment system is being configured. Please check back soon.'
+  });
+});
 
-router.post('/create-order', createOrder);
-router.post('/verify-payment', verifyPayment);
-router.get('/orders', getUserOrders);
-router.get('/orders/:id', getOrder);
-
-console.log('✅ Payment routes loaded');
+router.post('/verify-payment', (req, res) => {
+  res.status(503).json({
+    status: 'error',
+    message: 'Payment system is being configured. Please check back soon.'
+  });
+});
 
 module.exports = router;
