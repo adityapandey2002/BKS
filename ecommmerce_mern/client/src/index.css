@@ -78,3 +78,34 @@ body { @apply bg-gray-50 text-gray-900; }
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for notched phones */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prevent zoom on input focus (iOS) */
+input[type="text"],
+input[type="email"],
+input[type="search"],
+textarea {
+  font-size: 16px;
+}
+
+/* Active state for mobile */
+@media (hover: none) {
+  button:active,
+  a:active {
+    transform: scale(0.95);
+  }
+}

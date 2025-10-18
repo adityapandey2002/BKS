@@ -1,43 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-import axios from 'axios';
+import { useSiteAssets } from '../../context/SiteAssetsContext';
 
 const Navbar = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { isAuthenticated, user } = useSelector((s) => s.auth);
   const { items } = useSelector((s) => s.cart);
+  const { logoUrl, siteName } = useSiteAssets();
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [logo, setLogo] = useState(null);
-  const [siteName, setSiteName] = useState('Bihar Ka Swaad');
 
   const cartCount = items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-  // Fetch logo and site name from database
-  useEffect(() => {
-    const fetchSiteAssets = async () => {
-      try {
-        const { data } = await axios.get(`${API_URL}/site-assets`);
-        if (data.data.logoUrl) {
-          setLogo(data.data.logoUrl);
-        }
-        if (data.data.siteName) {
-          setSiteName(data.data.siteName);
-        }
-      } catch (error) {
-        console.error('Error fetching site assets:', error);
-      }
-    };
-    fetchSiteAssets();
-  }, [API_URL]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
+      if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container') && !event.target.closest('.hamburger-button')) {
         setIsMobileMenuOpen(false);
       }
       if (isUserMenuOpen && !event.target.closest('.user-menu-container')) {
@@ -48,10 +30,10 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, isUserMenuOpen]);
 
-  // Close mobile menu on route change
+  // Close mobile menu on route change (when user selects menu option)
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, []);
+  }, [location]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -70,13 +52,13 @@ const Navbar = () => {
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
+          {/* Logo - Database or Fallback */}
           <Link to="/" className="flex items-center space-x-3 group">
-            {logo ? (
-              <img
-                src={logo}
-                alt={siteName}
-                className="h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={siteName} 
+                className="h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
               />
             ) : (
               <>
@@ -100,7 +82,8 @@ const Navbar = () => {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
@@ -109,7 +92,8 @@ const Navbar = () => {
             <NavLink
               to="/about"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
@@ -118,7 +102,8 @@ const Navbar = () => {
             <NavLink
               to="/products"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
@@ -127,7 +112,8 @@ const Navbar = () => {
             <NavLink
               to="/blog"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
@@ -136,7 +122,8 @@ const Navbar = () => {
             <NavLink
               to="/contact"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
@@ -145,24 +132,13 @@ const Navbar = () => {
             <NavLink
               to="/track-order"
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
+                `text-gray-700 hover:text-orange-600 font-medium transition duration-200 ${
+                  isActive ? 'text-orange-600 border-b-2 border-orange-600' : ''
                 }`
               }
             >
               Track Order
             </NavLink>
-          </div>
-
-          {/* Mobile Navigation - Icon Links */}
-          <div className="lg:hidden flex items-center space-x-4">
-            <button
-              onClick={toggleMobileMenu}
-              className="text-gray-700 hover:text-orange-600 transition duration-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
           </div>
 
           {/* Right side actions */}
@@ -194,7 +170,7 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* User Menu or Auth Links */}
+            {/* User Menu */}
             {isAuthenticated ? (
               <div className="relative user-menu-container">
                 <button
@@ -207,7 +183,6 @@ const Navbar = () => {
                   <span className="hidden xl:block text-sm font-medium">My Account</span>
                 </button>
 
-                {/* User Dropdown */}
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100">
                     <div className="px-4 py-3 border-b border-gray-100">
@@ -256,14 +231,17 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Auth Icons */}
+          {/* Mobile Icons - REORDERED: Wishlist, Cart, then Hamburger Menu */}
           <div className="lg:hidden flex items-center space-x-4">
-            <Link to="/wishlist" className="text-gray-700">
+            {/* Wishlist Icon */}
+            <Link to="/wishlist" className="text-gray-700 hover:text-orange-600">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </Link>
-            <Link to="/cart" className="text-gray-700 relative">
+
+            {/* Cart Icon */}
+            <Link to="/cart" className="text-gray-700 hover:text-orange-600 relative">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -273,35 +251,117 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-            {!isAuthenticated && (
-              <>
-                <Link to="/login" className="text-gray-700">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                </Link>
-              </>
-            )}
+
+            {/* Hamburger Menu Button - MOVED TO LAST */}
+            <button
+              onClick={toggleMobileMenu}
+              className="hamburger-button text-gray-700 hover:text-orange-600 transition duration-200 p-2"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Auto-closes on selection */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mobile-menu-container">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <NavLink to="/" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Home</NavLink>
-              <NavLink to="/about" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">About Us</NavLink>
-              <NavLink to="/products" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Products</NavLink>
-              <NavLink to="/blog" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Blog</NavLink>
-              <NavLink to="/contact" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Contact Us</NavLink>
-              <NavLink to="/track-order" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Track Order</NavLink>
-              {isAuthenticated && user?.role === 'admin' && (
-                <NavLink to="/dashboard" className="block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md">Dashboard</NavLink>
-              )}
-              {isAuthenticated && (
-                <button onClick={handleLogout} className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md">Logout</button>
-              )}
-            </div>
+          <div className="lg:hidden mobile-menu-container pb-4 border-t border-gray-200 mt-2">
+            <NavLink 
+              to="/" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink 
+              to="/about" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              About Us
+            </NavLink>
+            <NavLink 
+              to="/products" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              Products
+            </NavLink>
+            <NavLink 
+              to="/blog" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              Blog
+            </NavLink>
+            <NavLink 
+              to="/contact" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              Contact Us
+            </NavLink>
+            <NavLink 
+              to="/track-order" 
+              className={({ isActive }) => 
+                `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+              }
+            >
+              Track Order
+            </NavLink>
+
+            {/* Mobile Auth Links */}
+            {isAuthenticated ? (
+              <>
+                {user?.role === 'admin' && (
+                  <NavLink 
+                    to="/dashboard" 
+                    className={({ isActive }) => 
+                      `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+                    }
+                  >
+                    Dashboard
+                  </NavLink>
+                )}
+                <button 
+                  onClick={handleLogout} 
+                  className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink 
+                  to="/login" 
+                  className={({ isActive }) => 
+                    `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+                  }
+                >
+                  Login
+                </NavLink>
+                <NavLink 
+                  to="/signup" 
+                  className={({ isActive }) => 
+                    `block px-3 py-2 text-gray-700 hover:bg-orange-50 rounded-md ${isActive ? 'bg-orange-50 text-orange-600 font-semibold' : ''}`
+                  }
+                >
+                  Sign Up
+                </NavLink>
+              </>
+            )}
           </div>
         )}
       </div>
